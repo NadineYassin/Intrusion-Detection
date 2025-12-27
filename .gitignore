@@ -1,0 +1,101 @@
+# # Python
+# __pycache__/
+# *.py[cod]
+# *$py.class
+# *.so
+# .Python
+# build/
+# develop-eggs/
+# dist/
+# downloads/
+# eggs/
+# .eggs/
+# lib/
+# lib64/
+# parts/
+# sdist/
+# var/
+# wheels/
+# *.egg-info/
+# .installed.cfg
+# *.egg
+
+# # Virtual Environment
+# venv/
+# env/
+# ENV/
+# .venv
+
+# # Jupyter Notebook
+# .ipynb_checkpoints
+# *.ipynb_checkpoints
+
+# # IDE
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
+# *~
+
+# # Data files (large datasets)
+# data/raw/*
+# data/processed/*
+# data/external/*
+# !data/raw/.gitkeep
+# !data/processed/.gitkeep
+# !data/external/.gitkeep
+
+# # Models (large files)
+# models/*
+# !models/.gitkeep
+
+# # Logs
+# logs/*
+# !logs/.gitkeep
+
+# # Reports (generated)
+# reports/*
+# !reports/.gitkeep
+
+# # OS
+# .DS_Store
+# Thumbs.db
+
+# # Environment variables
+# .env
+# .env.local
+
+# # MLflow
+# mlruns/
+
+# # Weights & Biases
+# wandb/
+
+# # PyTorch
+# *.pth
+# *.pt
+
+# # TensorFlow
+# *.ckpt
+# *.h5
+
+# # Pickle files
+# *.pkl
+# *.pickle
+# data/
+# models/
+# *.csv
+# *.joblib
+# Ignore everything by default
+*
+
+# Allow notebooks
+!*.ipynb
+
+# Allow README and gitignore
+!README.md
+!.gitignore
+
+# Allow notebooks folder (if you have one)
+!notebooks/
+!notebooks/**/*.ipynb
