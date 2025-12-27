@@ -321,52 +321,19 @@ def tab_test_detection(model, scaler, test_df):
 # Tab 2: Manual Input
 # ============================================
 
-def tab_manual_input(model, scaler, test_df):
+def tab_manual_input(model, scaler):
     """Manual input for custom testing."""
     st.header("✏️ Manual Input")
 
     st.info("""
     **What is this?**
     Enter your own network flow values to see what the model predicts.
-    You can also load an example attack to see typical values.
+    All 52 features must be filled in for the model to make a prediction.
     """)
-
-    # Load example buttons
-    st.subheader("Quick Examples")
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        if st.button("📗 Load Normal Traffic", use_container_width=True):
-            example = test_df[test_df['Attack Type'] == 'Normal Traffic'].sample(n=1)
-            st.session_state['manual_values'] = example.drop('Attack Type', axis=1).iloc[0].to_dict()
-            st.session_state['manual_example_type'] = 'Normal Traffic'
-
-    with col2:
-        if st.button("📕 Load DoS Attack", use_container_width=True):
-            example = test_df[test_df['Attack Type'] == 'DoS'].sample(n=1)
-            st.session_state['manual_values'] = example.drop('Attack Type', axis=1).iloc[0].to_dict()
-            st.session_state['manual_example_type'] = 'DoS'
-
-    with col3:
-        if st.button("📙 Load Port Scan", use_container_width=True):
-            example = test_df[test_df['Attack Type'] == 'Port Scanning'].sample(n=1)
-            st.session_state['manual_values'] = example.drop('Attack Type', axis=1).iloc[0].to_dict()
-            st.session_state['manual_example_type'] = 'Port Scanning'
-
-    with col4:
-        if st.button("📘 Load Brute Force", use_container_width=True):
-            example = test_df[test_df['Attack Type'] == 'Brute Force'].sample(n=1)
-            st.session_state['manual_values'] = example.drop('Attack Type', axis=1).iloc[0].to_dict()
-            st.session_state['manual_example_type'] = 'Brute Force'
-
-    if 'manual_example_type' in st.session_state:
-        st.success(f"✅ Loaded example: **{st.session_state['manual_example_type']}**")
-
-    st.markdown("---")
 
     # Input form
     st.subheader("Feature Values")
-    st.caption("Modify values below or use the examples above")
+    st.caption("Enter values for the network flow features below")
 
     # Get default values
     if 'manual_values' not in st.session_state:
@@ -791,7 +758,7 @@ Required files:
         tab_test_detection(model, scaler, test_df)
 
     with tab2:
-        tab_manual_input(model, scaler, test_df)
+        tab_manual_input(model, scaler)
 
     with tab3:
         tab_batch_analysis(model, scaler)
