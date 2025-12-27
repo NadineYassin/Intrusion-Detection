@@ -21,3 +21,6 @@
 # ================================
 !models/
 !models/xgboost.joblib
+
+!scalers/
+!scalers/robust_scaler.joblib
