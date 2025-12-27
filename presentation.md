@@ -26,18 +26,14 @@ style: |
 # Network Intrusion Detection System
 ## Using Machine Learning to Detect Cyber Attacks
 
-**Course:** Introduction to Cyber Security
-**Dataset:** CICIDS2017
-
 ---
 
 # The Problem
 
 **Networks are constantly under attack.**
 
-- Hackers try to steal data, crash servers, and take control of systems
-- Traditional firewalls use fixed rules - attackers can bypass them
-- We need **intelligent** detection that learns attack patterns
+- Hackers try to steal data, break systems, or shut servers down
+- Normal firewalls use simple rules and can be tricked
 
 **Our Solution:** Train ML models to automatically detect 6 types of attacks
 
