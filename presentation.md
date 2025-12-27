@@ -2,17 +2,15 @@
 marp: true
 theme: default
 paginate: true
-backgroundColor: #1a1a2e
-color: #eaeaea
 style: |
   section {
     font-family: 'Segoe UI', Arial, sans-serif;
   }
   h1 {
-    color: #00d4ff;
+    color: #004654ff;
   }
   h2 {
-    color: #00d4ff;
+    color: #003742ff;
   }
   code {
     background: #16213e;
@@ -21,7 +19,7 @@ style: |
     font-size: 0.8em;
   }
   strong {
-    color: #00d4ff;
+    color: #002128ff;
   }
 ---
 
