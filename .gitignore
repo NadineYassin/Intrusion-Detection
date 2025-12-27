@@ -99,6 +99,10 @@
 # Allow notebooks folder (if you have one)
 !notebooks/
 !notebooks/**/*.ipynb
+<<<<<<< HEAD
 
 # Allow requirements files
 !requirements.txt
+=======
+!xgboost.joblib
+>>>>>>> ccfa1f6 (Save local changes)
