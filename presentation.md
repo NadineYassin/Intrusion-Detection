@@ -39,16 +39,17 @@ style: |
 
 ---
 
+<!-- _class: two-column -->
 # Related Work & Our Contributions
 
-![w:400](paper.png)
+![bg right:40% w:400](paper.png)
 
 | Paper | Our Work |
 |-------|----------|
-| Feature selection (Info Gain) | All 52 features |
+| Feature selection | All 52 features |
 | Single model | **RF vs XGBoost** |
 | No imbalance handling | **SMOTE + Undersampling** |
-| No resource tracking | **Memory & CPU monitoring** |
+| No resource tracking | **Memory & CPU** |
 | No demo | **Streamlit app** |
 
 ---
