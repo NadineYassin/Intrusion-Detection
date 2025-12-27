@@ -24,3 +24,9 @@
 
 !scalers/
 !scalers/robust_scaler.joblib
+
+# ================================
+# Allow Streamlit app
+# ================================
+!app.py
+!requirements.txt
