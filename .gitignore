@@ -99,3 +99,6 @@
 # Allow notebooks folder (if you have one)
 !notebooks/
 !notebooks/**/*.ipynb
+
+# Allow requirements files
+!requirements.txt
