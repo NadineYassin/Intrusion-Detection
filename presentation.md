@@ -74,20 +74,31 @@ Network Traffic → Packet Capture → Feature Extraction → ML Model → Attac
 
 ---
 
-# What We Did (Notebook)
+# What We Did: Data Preprocessing
 
-### 1. Data Preprocessing
-- Loaded 2.8M+ network flow records
-- Split: **70% training**, **30% testing**
-- Scaled features using **RobustScaler**
+### 1. Loaded the Data
+- **2.8 million+** network flow records
+- Each record has **52 features** + attack label
 
-### 2. Handled Imbalanced Data
-- **Undersampled** Normal Traffic (2M → 500K)
-- **Oversampled** minority attacks using **SMOTE**
+### 2. Train/Test Split
+- **70% training**, **30% testing**
+- Stratified split (keeps attack ratios balanced)
 
-### 3. Trained Two Models
-- **Random Forest** (200 trees)
-- **XGBoost** (150 estimators)
+### 3. Feature Scaling
+- Applied **RobustScaler** (handles outliers well)
+
+---
+
+# What We Did: Handling Imbalanced Data
+
+**Problem:** Normal traffic dominates (2M vs 1.9K bots)
+
+| Technique | What We Did |
+|-----------|-------------|
+| **Undersampling** | Reduced Normal Traffic: 2M → 500K |
+| **SMOTE** | Generated synthetic minority samples |
+
+**Then trained:** Random Forest (200 trees) & XGBoost (150 estimators)
 
 ---
 
@@ -172,5 +183,3 @@ Network Traffic → Packet Capture → Feature Extraction → ML Model → Attac
 - Add more attack types
 - Real-time PCAP processing
 - Deploy on actual network
-
----
