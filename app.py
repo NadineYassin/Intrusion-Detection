@@ -177,11 +177,8 @@ def load_model():
     model_path = Path(__file__).parent / "models" / "xgboost.joblib"
     return joblib.load(model_path)
 
-@st.cache_resource
-def load_scaler():
-    """Load the RobustScaler."""
-    scaler_path = Path(__file__).parent / "scalers" / "robust_scaler.joblib"
-    return joblib.load(scaler_path)
+# Note: Scaler is NOT needed - the XGBoost model was trained on unscaled data
+# The scaler file exists but was only used for SMOTE resampling in the notebook
 
 @st.cache_data
 def load_and_split_data():
@@ -211,17 +208,23 @@ def load_and_split_data():
 # Prediction Functions
 # ============================================
 
-def predict_single(model, scaler, features_df):
-    """Make prediction for a single sample."""
-    X_scaled = scaler.transform(features_df)
-    prediction = model.predict(X_scaled)
-    return REVERSE_MAPPING[prediction[0]]
+def predict_single(model, features_df):
+    """Make prediction for a single sample.
 
-def predict_batch(model, scaler, features_df):
-    """Make predictions for multiple samples."""
-    X_scaled = scaler.transform(features_df)
-    predictions = model.predict(X_scaled)
-    return [REVERSE_MAPPING[p] for p in predictions]
+    Note: The XGBoost model was trained on UNSCALED data in the notebook,
+    so we pass features directly without scaling.
+    """
+    prediction = model.predict(features_df)
+    return REVERSE_MAPPING[int(prediction[0])]
+
+def predict_batch(model, features_df):
+    """Make predictions for multiple samples.
+
+    Note: The XGBoost model was trained on UNSCALED data in the notebook,
+    so we pass features directly without scaling.
+    """
+    predictions = model.predict(features_df)
+    return [REVERSE_MAPPING[int(p)] for p in predictions]
 
 # ============================================
 # UI Components
@@ -253,7 +256,7 @@ def render_prediction_result(prediction, actual=None):
 # Tab 1: Test on Unseen Data
 # ============================================
 
-def tab_test_detection(model, scaler, test_df):
+def tab_test_detection(model, test_df):
     """Test detection on data the model has never seen."""
     st.header("🧪 Test on Unseen Data")
 
@@ -296,7 +299,7 @@ def tab_test_detection(model, scaler, test_df):
             features = sample.drop('Attack Type', axis=1)
 
             # Make prediction
-            prediction = predict_single(model, scaler, features)
+            prediction = predict_single(model, features)
 
             # Display result
             render_prediction_result(prediction, actual)
@@ -321,7 +324,7 @@ def tab_test_detection(model, scaler, test_df):
 # Tab 2: Manual Input
 # ============================================
 
-def tab_manual_input(model, scaler):
+def tab_manual_input(model):
     """Manual input for custom testing."""
     st.header("✏️ Manual Input")
 
@@ -384,7 +387,7 @@ def tab_manual_input(model, scaler):
         input_df = pd.DataFrame([input_values])[FEATURES]
 
         # Make prediction
-        prediction = predict_single(model, scaler, input_df)
+        prediction = predict_single(model, input_df)
 
         st.markdown("### Prediction Result")
         render_prediction_result(prediction)
@@ -393,7 +396,7 @@ def tab_manual_input(model, scaler):
 # Tab 3: Batch Analysis (CSV Upload)
 # ============================================
 
-def tab_batch_analysis(model, scaler):
+def tab_batch_analysis(model):
     """Batch analysis tab content."""
     st.header("📁 Batch Analysis (CSV Upload)")
 
@@ -446,7 +449,7 @@ def tab_batch_analysis(model, scaler):
 
             # Make predictions
             with st.spinner("🔄 Analyzing traffic..."):
-                predictions = predict_batch(model, scaler, features)
+                predictions = predict_batch(model, features)
 
             # Results
             results_df = df.copy()
@@ -732,15 +735,13 @@ def main():
     # Load resources
     try:
         model = load_model()
-        scaler = load_scaler()
         test_df = load_and_split_data()
     except Exception as e:
         st.error(f"Error loading resources: {str(e)}")
-        st.info("Make sure the model, scaler, and data files are in the correct locations.")
+        st.info("Make sure the model and data files are in the correct locations.")
         st.code("""
 Required files:
 - models/xgboost.joblib
-- scalers/robust_scaler.joblib
 - data/cicids2017_cleaned.csv
         """)
         return
@@ -755,13 +756,13 @@ Required files:
     ])
 
     with tab1:
-        tab_test_detection(model, scaler, test_df)
+        tab_test_detection(model, test_df)
 
     with tab2:
-        tab_manual_input(model, scaler)
+        tab_manual_input(model)
 
     with tab3:
-        tab_batch_analysis(model, scaler)
+        tab_batch_analysis(model)
 
     with tab4:
         tab_model_performance()
