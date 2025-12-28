@@ -324,6 +324,13 @@ def tab_test_detection(model, test_df):
 # Tab 2: Manual Input
 # ============================================
 
+def load_demo_samples():
+    """Load demo samples for the 'Load Example' button."""
+    demo_path = Path(__file__).parent / "demo_attacks.csv"
+    if demo_path.exists():
+        return pd.read_csv(demo_path)
+    return None
+
 def tab_manual_input(model):
     """Manual input for custom testing."""
     st.header("✏️ Manual Input")
@@ -331,17 +338,39 @@ def tab_manual_input(model):
     st.info("""
     **What is this?**
     Enter your own network flow values to see what the model predicts.
-    All 52 features must be filled in for the model to make a prediction.
+    Click **"Load Random Example"** to auto-fill with real network data.
     """)
+
+    # Initialize session state for all feature inputs if not exists
+    for feat in FEATURES:
+        if f"input_{feat}" not in st.session_state:
+            st.session_state[f"input_{feat}"] = 0.0
+
+    # Load Example button
+    demo_df = load_demo_samples()
+    if demo_df is not None:
+        if st.button("🎲 Load Random Example", use_container_width=True):
+            # Pick a random sample
+            sample = demo_df.sample(n=1).iloc[0]
+            # Update ALL widget keys directly in session state
+            for feat in FEATURES:
+                st.session_state[f"input_{feat}"] = float(sample[feat])
+            st.session_state['manual_example_type'] = sample.get('Attack Type', 'Unknown')
+            st.rerun()
+
+        # Show what type of example was loaded
+        if 'manual_example_type' in st.session_state:
+            example_type = st.session_state['manual_example_type']
+            if example_type == 'Normal Traffic':
+                st.success(f"📥 Loaded example: **{example_type}**")
+            else:
+                st.warning(f"📥 Loaded example: **{example_type}** (attack)")
+
+    st.markdown("---")
 
     # Input form
     st.subheader("Feature Values")
     st.caption("Enter values for the network flow features below")
-
-    # Get default values
-    if 'manual_values' not in st.session_state:
-        # Use median values as defaults
-        st.session_state['manual_values'] = {feat: 0.0 for feat in FEATURES}
 
     # Create input fields in columns
     input_values = {}
@@ -357,12 +386,11 @@ def tab_manual_input(model):
     cols = st.columns(3)
     for i, feat in enumerate(key_features):
         with cols[i % 3]:
-            default_val = st.session_state['manual_values'].get(feat, 0.0)
             input_values[feat] = st.number_input(
                 feat,
-                value=float(default_val),
                 help=FEATURE_EXPLANATIONS.get(feat, ''),
-                key=f"input_{feat}"
+                key=f"input_{feat}",
+                format="%.2f"
             )
 
     # Other features in expander
@@ -371,20 +399,20 @@ def tab_manual_input(model):
         cols = st.columns(3)
         for i, feat in enumerate(other_features):
             with cols[i % 3]:
-                default_val = st.session_state['manual_values'].get(feat, 0.0)
                 input_values[feat] = st.number_input(
                     feat,
-                    value=float(default_val),
                     help=FEATURE_EXPLANATIONS.get(feat, ''),
-                    key=f"input_{feat}"
+                    key=f"input_{feat}",
+                    format="%.2f"
                 )
 
     st.markdown("---")
 
     # Predict button
     if st.button("🔍 Analyze This Traffic", type="primary", use_container_width=True):
-        # Create dataframe from inputs
-        input_df = pd.DataFrame([input_values])[FEATURES]
+        # Create dataframe from inputs - get values directly from session state
+        input_data = {feat: st.session_state[f"input_{feat}"] for feat in FEATURES}
+        input_df = pd.DataFrame([input_data])[FEATURES]
 
         # Make prediction
         prediction = predict_single(model, input_df)
