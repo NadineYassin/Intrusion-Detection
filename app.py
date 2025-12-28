@@ -5,7 +5,6 @@ import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 
 # Page configuration
 st.set_page_config(
@@ -180,30 +179,6 @@ def load_model():
 # Note: Scaler is NOT needed - the XGBoost model was trained on unscaled data
 # The scaler file exists but was only used for SMOTE resampling in the notebook
 
-@st.cache_data
-def load_and_split_data():
-    """
-    Load data and split into train/test sets.
-    Returns ONLY the test set (data the model hasn't seen during training).
-    Uses the same random_state=42 as the notebook to get the exact same split.
-    """
-    data_path = Path(__file__).parent / "data" / "cicids2017_cleaned.csv"
-    df = pd.read_csv(data_path)
-
-    # Same split as in the notebook (70% train, 30% test, stratified, random_state=42)
-    X = df.drop('Attack Type', axis=1)
-    y = df['Attack Type']
-
-    _, X_test, _, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=42, stratify=y
-    )
-
-    # Combine back into a dataframe
-    test_df = X_test.copy()
-    test_df['Attack Type'] = y_test
-
-    return test_df
-
 # ============================================
 # Prediction Functions
 # ============================================
@@ -253,75 +228,7 @@ def render_prediction_result(prediction, actual=None):
             st.warning(f"✗ **Incorrect.** The actual label was: {actual}")
 
 # ============================================
-# Tab 1: Test on Unseen Data
-# ============================================
-
-def tab_test_detection(model, test_df):
-    """Test detection on data the model has never seen."""
-    st.header("🧪 Test on Unseen Data")
-
-    # Explanation box
-    st.info("""
-    **What is this?**
-    This tests the model on **real network traffic data it has NEVER seen before**.
-    The data comes from the CICIDS2017 dataset (30% held out for testing).
-    This proves the model can detect NEW attacks, not just memorize old ones.
-    """)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.subheader("Get a Sample")
-
-        # Show available attack types
-        st.markdown("**Available attack types in test data:**")
-        attack_counts = test_df['Attack Type'].value_counts()
-        for attack, count in attack_counts.items():
-            color = "🟢" if attack == "Normal Traffic" else "🔴"
-            st.markdown(f"{color} {attack}: {count:,} samples")
-
-        st.markdown("---")
-
-        # Random sample button
-        if st.button("🎲 Get Random Test Sample", type="primary", use_container_width=True):
-            sample = test_df.sample(n=1)
-            st.session_state['test_sample'] = sample
-            st.session_state['test_actual'] = sample['Attack Type'].values[0]
-
-    with col2:
-        st.subheader("Prediction Result")
-
-        if 'test_sample' in st.session_state:
-            sample = st.session_state['test_sample']
-            actual = st.session_state['test_actual']
-
-            # Get features only
-            features = sample.drop('Attack Type', axis=1)
-
-            # Make prediction
-            prediction = predict_single(model, features)
-
-            # Display result
-            render_prediction_result(prediction, actual)
-
-            # Show some key features
-            st.markdown("---")
-            with st.expander("📊 View Network Flow Details", expanded=False):
-                st.markdown("**Key features of this network connection:**")
-
-                key_features = ['Destination Port', 'Flow Duration', 'Total Fwd Packets',
-                               'Flow Bytes/s', 'FIN Flag Count', 'ACK Flag Count']
-
-                for feat in key_features:
-                    val = features[feat].values[0]
-                    explanation = FEATURE_EXPLANATIONS.get(feat, '')
-                    st.markdown(f"**{feat}**: `{val:,.2f}`")
-                    st.caption(explanation)
-        else:
-            st.markdown("👆 Click **'Get Random Test Sample'** to test the model on unseen data")
-
-# ============================================
-# Tab 2: Manual Input
+# Tab 1: Manual Input (Live Detection)
 # ============================================
 
 def load_demo_samples():
@@ -332,13 +239,13 @@ def load_demo_samples():
     return None
 
 def tab_manual_input(model):
-    """Manual input for custom testing."""
-    st.header("✏️ Manual Input")
+    """Live detection tab - test the model on network traffic."""
+    st.header("🔍 Live Detection")
 
     st.info("""
     **What is this?**
-    Enter your own network flow values to see what the model predicts.
-    Click **"Load Random Example"** to auto-fill with real network data.
+    Test the model on network traffic data. Click **"Load Random Example"** to load real traffic samples,
+    or enter your own values manually.
     """)
 
     # Initialize session state for all feature inputs if not exists
@@ -763,28 +670,25 @@ def main():
     # Load resources
     try:
         model = load_model()
-        test_df = load_and_split_data()
     except Exception as e:
         st.error(f"Error loading resources: {str(e)}")
-        st.info("Make sure the model and data files are in the correct locations.")
+        st.info("Make sure the model file is in the correct location.")
         st.code("""
 Required files:
 - models/xgboost.joblib
-- data/cicids2017_cleaned.csv
         """)
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🧪 Test Detection",
-        "✏️ Manual Input",
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📚 How It Works",
+        "🔍 Live Detection",
         "📁 Batch Analysis",
-        "📈 Model Performance",
-        "📚 How It Works"
+        "📈 Model Performance"
     ])
 
     with tab1:
-        tab_test_detection(model, test_df)
+        tab_how_it_works()
 
     with tab2:
         tab_manual_input(model)
@@ -794,9 +698,6 @@ Required files:
 
     with tab4:
         tab_model_performance()
-
-    with tab5:
-        tab_how_it_works()
 
 if __name__ == "__main__":
     main()
